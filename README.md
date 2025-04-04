@@ -1,2 +1,2 @@
-# Microcontroller-Project-Bom-Defuse-Game
-Bom Defuse Game using C
+# Microcontroller-Project-Bomb-Defuse-Game
+Bomb Defuse Game using C
