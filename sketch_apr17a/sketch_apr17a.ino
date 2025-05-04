@@ -9,7 +9,8 @@ byte analogPin = A3;
 
 int *ptr;
 int size = 1;
-int countdown = 30;
+int countdown = 60;
+int level = 3;
 
 bool start = false;
 bool intro = false;
@@ -63,16 +64,22 @@ void loop() {
       if(customkey){
         if(customkey == 'A'){
           Serial.println("A pass");
+          countdown = 60;
+          level = 3;
           start = true;
           break;
         }
         else if (customkey == 'B'){
           Serial.println("B pass");
+          countdown = 30;
+          level = 4;
           start = true;
           break;
         }
         else if (customkey == 'C'){
           Serial.println("C pass");
+          countdown = 15;
+          level = 5;
           start = true;
           break;
         }
@@ -103,23 +110,31 @@ void loop() {
 
   
   int counter = 0;
+  int round = 0;
   int wired = false;
-  void* task2 = nullptr;
-  while(running){
-    timer.tick();
 
+  while(running){
+
+    // Need to fix
     if(counter >= size){
       if(!wired){
-        task2 = timer.every(1000, wiredBeep);
+        wiredBeep();
         wired = true;
+        Serial.println(map(ptr[counter-1], 1, 7, 50, 1023));
       }
       int mappedValue = map(ptr[counter-1], 1, 7, 50, 1023);
       int input = analogRead(analogPin);
       if(abs(input - mappedValue) <= 5) {
         updateNumber();
+        round++;
+        if(round == level){
+          gameWin();
+          break;
+        }
         counter = 0;
-        timer.cancel(task2);
         wired = false;
+        Serial.println("Cut the wire");
+        wiredBeep();
         delay(250);
       }
     }
@@ -176,14 +191,29 @@ void loop() {
         errorBeep();
       }
     }
+    timer.tick();
   }
 }
 
 void beep(){
-  analogWrite(buzzPin, 150);
-  timer.in(250, [](){
-    analogWrite(buzzPin, 255);
-  });
+  if(countdown <= 5){
+    for (int i = 0; i < 3; i++) {
+      analogWrite(buzzPin, 150); // Medium volume
+      timer.in(100, [](){
+      analogWrite(buzzPin, 0);
+      });
+      timer.in(100, [](){
+      analogWrite(buzzPin, 255);
+      });
+    }
+  }
+  else {
+    analogWrite(buzzPin, 150);
+    timer.in(250, [](){
+      analogWrite(buzzPin, 255);
+    });
+  }
+
   Serial.println(countdown);
   countdown--;
   if(countdown == 0){
@@ -200,10 +230,10 @@ void longBeep(){
 
 void wiredBeep(){
   analogWrite(buzzPin, 50);
-  timer.in(150, [](){
+  timer.in(1000, [](){
     analogWrite(buzzPin, 100);
   });
-  timer.in(100, [](){
+  timer.in(1000, [](){
     analogWrite(buzzPin, 255);
   });
 }
@@ -217,6 +247,14 @@ void errorBeep() {
   }
 }
 
+void victorySound() {
+  for (int freq = 1000; freq <= 5000; freq += 100) {
+    tone(buzzPin, freq); // Frequency sweep
+    delay(30);
+  }
+  noTone(buzzPin);
+}
+
 void updateNumber() {
   size++;
   int *temp = ptr;
@@ -228,25 +266,32 @@ void updateNumber() {
   ptr[size-1] = random(7) + 1;
 }
 
+void gameWin() {
+  Serial.println("Congratulations");
+  Serial.println("You have defused the bomb");
+  victorySound();
+  resetGame();
+}
+
 void gameOver() {
   Serial.println("!!!BOOM!!!");
   longBeep();
   resetGame();
 }
 
-
 void resetGame() {
   size = 1;
   ptr[0] = random(7) + 1;
-  countdown = 30;
+  countdown = 60;
+  level = 3;
   start = false;
   intro = false;
   running = false;
-    // Turn off all LEDs
+  digitalWrite(buzzPin, HIGH);
+    // Turn off all LEDs, not working
   for (int i = 11; i <= 13; i++) {
     digitalWrite(i, LOW);
   }
-  
 
 }
 
