@@ -112,6 +112,7 @@ void loop() {
   int counter = 0;
   int round = 0;
   int wired = false;
+  int mappedValue;
 
   while(running){
 
@@ -120,9 +121,18 @@ void loop() {
       if(!wired){
         wiredBeep();
         wired = true;
+        mappedValue = map(ptr[counter-1], 1, 7, 50, 1023);
+        if(abs(analogRead(analogPin) - mappedValue) <= 100) {
+          if(mappedValue >= 500) {
+            mappedValue = 50;
+          }
+          else {
+            mappedValue = 1000;
+          }
+        }
         Serial.println(map(ptr[counter-1], 1, 7, 50, 1023));
       }
-      int mappedValue = map(ptr[counter-1], 1, 7, 50, 1023);
+
       int input = analogRead(analogPin);
       if(abs(input - mappedValue) <= 5) {
         updateNumber();
