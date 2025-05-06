@@ -4,7 +4,6 @@
 #include <arduino-timer.h>
 
 int buzzPin = 10;
-int interruptPin;
 byte analogPin = A3;
 
 int *ptr;
@@ -51,7 +50,7 @@ void setup() {
 
 
 void loop() {
-  Serial.print(countdown);
+
   while(!start){
     Serial.println("=====================================");
     Serial.println("This is a bomb defusing game");
@@ -71,14 +70,14 @@ void loop() {
         }
         else if (customkey == 'B'){
           Serial.println("B pass");
-          countdown = 30;
+          countdown = 45;
           level = 4;
           start = true;
           break;
         }
         else if (customkey == 'C'){
           Serial.println("C pass");
-          countdown = 15;
+          countdown = 35;
           level = 5;
           start = true;
           break;
@@ -102,9 +101,9 @@ void loop() {
     Serial.println("1");
     delay(1000);
     Serial.println("Startttttttttttttttttttttttttttttttttt");
+    longBeep();
     intro = true;
     running = true;
-    longBeep();
   }
 
 
@@ -116,7 +115,6 @@ void loop() {
 
   while(running){
 
-    // Need to fix
     if(counter >= size){
       if(!wired){
         wiredBeep();
@@ -130,7 +128,7 @@ void loop() {
             mappedValue = 1000;
           }
         }
-        Serial.println(map(ptr[counter-1], 1, 7, 50, 1023));
+        // Serial.println(map(ptr[counter-1], 1, 7, 50, 1023));
       }
 
       int input = analogRead(analogPin);
@@ -206,18 +204,15 @@ void loop() {
 }
 
 void beep(){
-  if(countdown <= 5){
-    for (int i = 0; i < 3; i++) {
-      analogWrite(buzzPin, 150); // Medium volume
-      timer.in(100, [](){
-      analogWrite(buzzPin, 0);
-      });
-      timer.in(100, [](){
-      analogWrite(buzzPin, 255);
-      });
-    }
+  if(countdown <= 10){
+
+    analogWrite(buzzPin, 50); 
+    timer.in(250, [](){
+    analogWrite(buzzPin, 255);
+    });
+
   }
-  else {
+  else  {
     analogWrite(buzzPin, 150);
     timer.in(250, [](){
       analogWrite(buzzPin, 255);
